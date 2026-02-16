@@ -1,61 +1,64 @@
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import Organization, Building, Activity, Phone
+from app.core.database import SessionLocal
+from app.models import Organization, Building, Activity, Phone
+from app.core.logger import logger
 
 db: Session = SessionLocal()
 
 
 def init_data():
     buildings = [
-        Building(address="г. Москва, ул. Блюхера, 32/1", latitude=55.7558, longitude=37.6173),
-        Building(address="г. Москва, ул. Ленина, 1, офис 3", latitude=55.7520, longitude=37.6156),
-        Building(address="г. Санкт-Петербург, Невский проспект, 28", latitude=59.9343, longitude=30.3351),
-        Building(address="г. Москва, ул. Тверская, 10", latitude=55.7558, longitude=37.6175),
+        Building(address='г. Москва, ул. Блюхера, 32/1', latitude=55.7558, longitude=37.6173),
+        Building(address='г. Москва, ул. Ленина, 1, офис 3', latitude=55.7520, longitude=37.6156),
+        Building(address='г. Санкт-Петербург, Невский проспект, 28', latitude=59.9343, longitude=30.3351),
+        Building(address='г. Москва, ул. Тверская, 10', latitude=55.7558, longitude=37.6175),
     ]
     
     for building in buildings:
         db.add(building)
     db.commit()
+    logger.info('Buildings created')
     
-    food = Activity(name="Еда", parent_id=None)
+    food = Activity(name='Еда', parent_id=None)
     db.add(food)
     db.flush()
     
-    cars = Activity(name="Автомобили", parent_id=None)
+    cars = Activity(name='Автомобили', parent_id=None)
     db.add(cars)
     db.flush()
     
-    meat = Activity(name="Мясная продукция", parent_id=food.id)
+    meat = Activity(name='Мясная продукция', parent_id=food.id)
     db.add(meat)
     db.flush()
     
-    dairy = Activity(name="Молочная продукция", parent_id=food.id)
+    dairy = Activity(name='Молочная продукция', parent_id=food.id)
     db.add(dairy)
     db.flush()
     
-    cargo = Activity(name="Грузовые", parent_id=cars.id)
+    cargo = Activity(name='Грузовые', parent_id=cars.id)
     db.add(cargo)
     db.flush()
     
-    passenger = Activity(name="Легковые", parent_id=cars.id)
+    passenger = Activity(name='Легковые', parent_id=cars.id)
     db.add(passenger)
     db.flush()
     
-    parts = Activity(name="Запчасти", parent_id=cars.id)
+    parts = Activity(name='Запчасти', parent_id=cars.id)
     db.add(parts)
     db.flush()
     
-    accessories = Activity(name="Аксессуары", parent_id=parts.id)
+    accessories = Activity(name='Аксессуары', parent_id=parts.id)
     db.add(accessories)
     db.commit()
+    logger.info('Activities created')
     
     phones_data = [
-        "2-222-222",
-        "3-333-333",
-        "4-444-444",
-        "5-555-555",
-        "6-666-666",
-        "7-777-777",
+        '2-222-222',
+        '3-333-333',
+        '4-444-444',
+        '5-555-555',
+        '6-666-666',
+        '7-777-777',
     ]
     
     phones = []
@@ -64,6 +67,7 @@ def init_data():
         db.add(phone)
         phones.append(phone)
     db.commit()
+    logger.info('Phones created')
     
     org1 = Organization(
         name='ООО "Рога и Копыта"',
@@ -106,20 +110,19 @@ def init_data():
     db.add(org5)
     
     db.commit()
-    print("Тестовые данные успешно добавлены в базу данных!")
+    logger.info('Organizations created')
+    logger.info('Test data initialization completed successfully')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         existing_buildings = db.query(Building).count()
         if existing_buildings > 0:
-            print("База данных уже содержит данные. Пропускаем инициализацию.")
+            logger.info('Database already contains data. Skipping initialization.')
         else:
             init_data()
     except Exception as e:
-        print(f"Ошибка при инициализации данных: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f'Error during data initialization: {e}', exc_info=True)
         db.rollback()
     finally:
         db.close()

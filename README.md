@@ -1,6 +1,16 @@
-# REST API для справочника Организаций, Зданий и Деятельностей
+REST API для справочника Организаций, Зданий и Деятельностей
 
 REST API приложение для управления справочником организаций, зданий и видов деятельности.
+
+Архитектура
+
+Проект использует многослойную архитектуру (Layered Architecture) с четким разделением ответственности:
+- API Layer (routes/) - обработка HTTP запросов
+- Service Layer (services/) - бизнес-логика
+- Repository Layer (repositories/) - доступ к данным
+- Model Layer (models/) - модели данных
+
+Подробное описание архитектуры см. в ARCHITECTURE.md
 
 Технологический стек
 
@@ -49,6 +59,11 @@ API Endpoints
 Деятельности
 
 - 'GET /activities/{activity_id}/organizations' - Список организаций по виду деятельности (включая вложенные)
+
+Health Checks
+
+- 'GET /health' - Проверка доступности API
+- 'GET /health/ready' - Проверка готовности (включая подключение к БД)
 
 Создание данных (для тестирования)
 
@@ -117,10 +132,10 @@ curl -H 'X-API-Key: test-api-key-12345' http://localhost:8001/organizations
    alembic upgrade head
 
 5. Заполните базу тестовыми данными:
-   python init_db.py
+   python -m app.scripts.init_db
 
 6. Запустите сервер:
-   uvicorn main:app --reload
+   uvicorn app.main:app --reload
 
 Тестовые данные
 

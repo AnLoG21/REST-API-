@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from database import Base
+from app.core.database import Base
 
 organization_activity = Table(
     'organization_activity',

@@ -16,4 +16,7 @@ alembic/versions/*.pyc
 .coverage
 htmlcov/
 .DS_Store
+app/__pycache__/
+app/**/__pycache__/
+*.log
 

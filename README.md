@@ -82,11 +82,11 @@ Health Checks
 1. Клонируйте репозиторий или скопируйте файлы проекта
 
 2. Создайте файл '.env' (опционально, значения по умолчанию уже установлены):
-   DATABASE_URL=postgresql://postgres:postgres@db:5432/organizations_db
+   DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5433/organizations_db
    API_KEY=test-api-key-12345
 
 3. Запустите приложение с помощью Docker Compose:
-   docker-compose up --build
+   docker compose up --build
 
 4. Приложение будет доступно по адресу: 'http://localhost:8001'
 
@@ -135,7 +135,7 @@ curl -H 'X-API-Key: test-api-key-12345' http://localhost:8001/organizations
    python -m app.scripts.init_db
 
 6. Запустите сервер:
-   uvicorn app.main:app --reload
+   uvicorn app.main:app
 
 Тестовые данные
 

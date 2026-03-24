@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.schemas import Organization as OrganizationSchema, OrganizationCreate
@@ -10,16 +10,16 @@ router = APIRouter(prefix='/organizations', tags=['organizations'])
 
 
 @router.get('/{organization_id}', response_model=OrganizationSchema, dependencies=[Depends(verify_api_key)])
-def get_organization(
+async def get_organization(
     organization_id: int,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_database)
 ):
     service = OrganizationService(db)
-    return service.get_organization(organization_id)
+    return await service.get_organization(organization_id)
 
 
 @router.get('', response_model=List[OrganizationSchema], dependencies=[Depends(verify_api_key)])
-def list_organizations(
+async def list_organizations(
     building_id: Optional[int] = Query(None, description='ID здания'),
     activity_id: Optional[int] = Query(None, description='ID вида деятельности'),
     name: Optional[str] = Query(None, description='Поиск по названию организации'),
@@ -30,10 +30,10 @@ def list_organizations(
     max_lat: Optional[float] = Query(None, description='Максимальная широта для прямоугольной области'),
     min_lon: Optional[float] = Query(None, description='Минимальная долгота для прямоугольной области'),
     max_lon: Optional[float] = Query(None, description='Максимальная долгота для прямоугольной области'),
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_database)
 ):
     service = OrganizationService(db)
-    return service.get_organizations(
+    return await service.get_organizations(
         building_id=building_id,
         activity_id=activity_id,
         name=name,
@@ -48,10 +48,10 @@ def list_organizations(
 
 
 @router.post('', response_model=OrganizationSchema, dependencies=[Depends(verify_api_key)])
-def create_organization(
+async def create_organization(
     organization: OrganizationCreate,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_database)
 ):
     service = OrganizationService(db)
-    return service.create_organization(organization)
+    return await service.create_organization(organization)
 

@@ -1,32 +1,43 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 from app.core.config import settings
 from app.core.logger import logger
 
-engine = create_engine(
-    settings.DATABASE_URL,
+ASYNC_DATABASE_URL = (
+    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if settings.DATABASE_URL.startswith("postgresql://")
+    else settings.DATABASE_URL
+)
+
+async_engine = create_async_engine(
+    ASYNC_DATABASE_URL,
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
     echo=False
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = async_sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False
+)
 
 Base = declarative_base()
 
 
-def get_db():
+async def get_db():
     db = SessionLocal()
     try:
         yield db
         logger.debug('Database session created')
     except Exception as e:
         logger.error(f'Database session error: {e}')
-        db.rollback()
+        await db.rollback()
         raise
     finally:
-        db.close()
+        await db.close()
         logger.debug('Database session closed')
 

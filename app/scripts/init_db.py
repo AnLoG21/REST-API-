@@ -1,12 +1,11 @@
-from sqlalchemy.orm import Session
+import asyncio
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import SessionLocal
 from app.models import Organization, Building, Activity, Phone
 from app.core.logger import logger
 
-db: Session = SessionLocal()
-
-
-def init_data():
+async def init_data(db: AsyncSession):
     buildings = [
         Building(address='г. Москва, ул. Блюхера, 32/1', latitude=55.7558, longitude=37.6173),
         Building(address='г. Москва, ул. Ленина, 1, офис 3', latitude=55.7520, longitude=37.6156),
@@ -16,40 +15,40 @@ def init_data():
     
     for building in buildings:
         db.add(building)
-    db.commit()
+    await db.commit()
     logger.info('Buildings created')
     
     food = Activity(name='Еда', parent_id=None)
     db.add(food)
-    db.flush()
+    await db.flush()
     
     cars = Activity(name='Автомобили', parent_id=None)
     db.add(cars)
-    db.flush()
+    await db.flush()
     
     meat = Activity(name='Мясная продукция', parent_id=food.id)
     db.add(meat)
-    db.flush()
+    await db.flush()
     
     dairy = Activity(name='Молочная продукция', parent_id=food.id)
     db.add(dairy)
-    db.flush()
+    await db.flush()
     
     cargo = Activity(name='Грузовые', parent_id=cars.id)
     db.add(cargo)
-    db.flush()
+    await db.flush()
     
     passenger = Activity(name='Легковые', parent_id=cars.id)
     db.add(passenger)
-    db.flush()
+    await db.flush()
     
     parts = Activity(name='Запчасти', parent_id=cars.id)
     db.add(parts)
-    db.flush()
+    await db.flush()
     
     accessories = Activity(name='Аксессуары', parent_id=parts.id)
     db.add(accessories)
-    db.commit()
+    await db.commit()
     logger.info('Activities created')
     
     phones_data = [
@@ -66,7 +65,7 @@ def init_data():
         phone = Phone(number=phone_num)
         db.add(phone)
         phones.append(phone)
-    db.commit()
+    await db.commit()
     logger.info('Phones created')
     
     org1 = Organization(
@@ -108,22 +107,28 @@ def init_data():
     org5.phones = [phones[0]]
     org5.activities = [accessories]
     db.add(org5)
-    
-    db.commit()
+
+    await db.commit()
     logger.info('Organizations created')
     logger.info('Test data initialization completed successfully')
 
 
-if __name__ == '__main__':
+async def main():
+    db: AsyncSession = SessionLocal()
     try:
-        existing_buildings = db.query(Building).count()
-        if existing_buildings > 0:
-            logger.info('Database already contains data. Skipping initialization.')
+        result = await db.execute(select(func.count(Organization.id)))
+        existing_organizations = result.scalar_one()
+        if existing_organizations > 0:
+            logger.info('Database already contains organizations. Skipping initialization.')
         else:
-            init_data()
+            await init_data(db)
     except Exception as e:
         logger.error(f'Error during data initialization: {e}', exc_info=True)
-        db.rollback()
+        await db.rollback()
     finally:
-        db.close()
+        await db.close()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
 

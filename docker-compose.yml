@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   db:
@@ -22,14 +21,19 @@ services:
     ports:
       - "8001:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/organizations_db
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5433/organizations_db
       API_KEY: test-api-key-12345
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - .:/app
-    command: sh -c "alembic upgrade head && python -m app.scripts.init_db && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      sh -exc "alembic upgrade head &&
+      python -m app.scripts.init_db &&
+      exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --log-level debug"
 
 volumes:
   postgres_data:

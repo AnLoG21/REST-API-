@@ -45,7 +45,6 @@ class ActivityCreate(ActivityBase):
 
 class Activity(ActivityBase):
     id: int
-    children: List['Activity'] = []
 
     class Config:
         from_attributes = True

@@ -1,6 +1,6 @@
 from fastapi import Security, HTTPException, status, Depends
 from fastapi.security import APIKeyHeader
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.logger import logger
@@ -18,6 +18,6 @@ def verify_api_key(api_key: str = Security(api_key_header)) -> str:
     return api_key
 
 
-def get_database(db: Session = Depends(get_db)) -> Session:
+async def get_database(db: AsyncSession = Depends(get_db)) -> AsyncSession:
     return db
 

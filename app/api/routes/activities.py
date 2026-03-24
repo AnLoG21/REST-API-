@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.schemas import Activity as ActivitySchema, ActivityCreate
@@ -12,19 +12,19 @@ router = APIRouter(prefix='/activities', tags=['activities'])
 
 
 @router.get('/{activity_id}/organizations', response_model=List[OrganizationSchema], dependencies=[Depends(verify_api_key)])
-def list_organizations_by_activity(
+async def list_organizations_by_activity(
     activity_id: int,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_database)
 ):
     service = OrganizationService(db)
-    return service.get_by_activity(activity_id)
+    return await service.get_by_activity(activity_id)
 
 
 @router.post('', response_model=ActivitySchema, dependencies=[Depends(verify_api_key)])
-def create_activity(
+async def create_activity(
     activity: ActivityCreate,
-    db: Session = Depends(get_database)
+    db: AsyncSession = Depends(get_database)
 ):
     service = ActivityService(db)
-    return service.create_activity(activity)
+    return await service.create_activity(activity)
 
